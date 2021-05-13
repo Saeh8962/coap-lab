@@ -9,12 +9,12 @@ public class Task2 extends Util.BaseTask {
 	public void run() {
 		/* Store the URI of the CoAP resource you want to query
 		 * in the String uri. */ 
-		String uri = ...;
+		String uri = "coap://[aaaa::212:7402:2:202]:5683/sensors/temp";
 		/* Construct a new client object for this URI. */
-		CoapClient client = ...;
+		CoapClient client = new CoapClient(uri);
 		
 		/* Perform a GET request with the client object. */
-		CoapResponse response = ...;
+		CoapResponse response = client.get();
 		/* Deal with the response that we got. */
 		handleResponse(response);
 	}
@@ -28,26 +28,27 @@ public class Task2 extends Util.BaseTask {
 	 * the red LED on the node is turned off.
 	 */	
 	public static void handleResponse(CoapResponse response) {
-		if (...) {
+		if (Util.isInvalid(response)) {
 			/* Notify user if an error occurred. */
 			System.out.println("An error occurred!");
 		} else {
 			/* Extract the temperature from the response and print it. */
-			int temp = ...;
-			int nodeId = ...;
+			int temp = Util.parseTemperature(response);
+			int nodeId = Util.getNodeId(response);
 			System.out.println("The temperature on node " + nodeId + " is " + temp);
 			
 			/* Construct a new Client object for the node's LED resource.
 			 * Hint: Use Util.getBaseUri(response) for constructing the URI. */
-			String uri = ...;
+			String uri = Util.getBaseURI(response);
+			uri = uri+"/actuators/leds?color=r";
 			CoapClient client = new CoapClient(uri);
 			
 			if (temp > 50) {
 				/* If the temperature is too high, turn on the red LED. */
-				client.post(..., MediaTypeRegistry.TEXT_PLAIN);
+				client.post("mode=on", MediaTypeRegistry.TEXT_PLAIN);
 			} else {
 				/* If the temperature is okay, turn off the red LED. */
-				client.post(..., MediaTypeRegistry.TEXT_PLAIN);
+				client.post("mode=off", MediaTypeRegistry.TEXT_PLAIN);
 			}
 		}
 	}
